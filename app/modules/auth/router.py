@@ -11,12 +11,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def _set_refresh_cookie(response: Response, token: str) -> None:
+    # Cross-origin (S3/CloudFront → API): browsers only send the cookie with
+    # credentials if SameSite=None and Secure. Same-origin/local keeps Lax.
     response.set_cookie(
         key="refresh_token",
         value=token,
         httponly=True,
         secure=settings.cookie_secure,
-        samesite="lax",
+        samesite="none" if settings.cookie_secure else "lax",
         max_age=settings.refresh_token_days * 86400,
         path=f"{settings.api_v1_prefix}/auth",
     )

@@ -20,9 +20,14 @@ configure_logging()
 app = FastAPI(title=settings.app_name, version="1.0.0")
 install_exception_handlers(app)
 app.add_middleware(RequestContextMiddleware)
+
+_cors_origins = {x.strip() for x in settings.cors_origins.split(",") if x.strip()}
+if settings.frontend_url.strip():
+    _cors_origins.add(settings.frontend_url.strip().rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[x.strip() for x in settings.cors_origins.split(",") if x.strip()],
+    allow_origins=sorted(_cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
